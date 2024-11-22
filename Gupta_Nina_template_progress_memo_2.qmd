@@ -1,0 +1,203 @@
+---
+title: "Progress Memo 2"
+subtitle: |
+  | Final Project 
+  | Data Science 1 with R (STAT 301-1)
+author: "Nina Gupta"
+date: today
+pagetitle: "PM2 Nina Gupta"
+
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    embed-resources: true
+    link-external-newwindow: true
+
+execute:
+  warning: false
+  echo: false
+
+from: markdown+emoji
+reference-location: margin
+citation-location: margin
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+[Nina's Final Project Memo 2 Github Repo](https://github.com/ninag0104/final-project-2.git)
+
+:::
+
+
+```{r}
+#| label: load-data
+#| results: hide
+
+library(tidyverse)
+library(naniar)
+chicago_crimes <- read_csv("data/chicago_crimes.csv") |> 
+  janitor::clean_names()
+```
+
+
+## Data Source Summary
+
+[Chicago Crime Data](https://www.chicago.gov/city/en/dataset/crime.html)
+
+As a reminder, the data source I chose is the City of Chicago's^[data collected by
+Chicago Police Department] "Chicago Crime Data", presenting data from one year
+prior to the current date, minus the last 7 days. The link below provides more
+information on the source, data reliability, and variable meanings. 
+
+[Description of Chicago Crime Data](https://data.cityofchicago.org/Public-Safety/Crimes-One-year-prior-to-present/x2n5-8w5q/about_data)
+
+## Cleaning Data
+
+## EDA
+
+
+## Univariate & Bivariate Analysis - graphics/tables w description of what has
+## been found thus far. What exploring & why Share research question per graphic
+
+## Summarize Progress (where at, next steps, self-assessment, guiding curiosities
+## or research questions planned to explore)
+
+
+
+
+
+PROGRESS MEMO 1: 
+
+This dataset includes 257,912 observations and 17 variables containing both
+numerical (location (coordinates), date, case number, etc.) and categorical 
+variables (primary description (type of crime), secondary description (weapons
+used), block where the crime was committed, etc). There are 6 numerical variables
+and 11 categorical. With the amount of data, there are many relationships to be
+explored in this dataset. 
+
+I've explored the data using visuals that are in the "References" section of this
+document^[Located at the bottom of the document]
+
+```{r}
+#| label: exploring-variables
+#| results: hide
+
+chicago_crimes_summary <- chicago_crimes |>
+  skimr::skim_without_charts()
+```
+
+## Why this data
+
+I chose this data because I was curious to learn more about crime rates in Chicago
+and explore trends within the dataset, also considering we are located close to 
+the city. 
+
+Although I am still narrowing it down, I am interested exploring the
+correlation between types of crimes committed and another variable, possibly
+location or date of occurrence of the crime in Chicago. Since I am sure I want to 
+explore the type of crime vs another variable, in Figure 1 I explored the
+distribution of the types of crimes committed in Chicago.
+
+## Data quality & complexity check
+
+This data was collected by the City of Chicago during a specific time period^[one
+year prior to current date minus the past 7 days]. Data is extracted from the
+Chicago Police Department's CLEAR (Citizen Law Enforcement Analysis and Reporting)
+system and is a reputable source of information, other than room for bias of 
+police officers who collected the data. This is something I will have to note
+while making conclusions about the data.
+
+This dataset is updated daily, Tuesday through Sunday. This dataset is complex
+considering the number of variables and distribution of types of crime^[as seen
+in Figure 1] and that there are 6 variables with missing data, as 
+shown in Figure 2 and Table 1. 
+
+## Potential data issues
+
+One issue with the data mentioned earlier is that the police officers who
+collected it are subject to bias, which could be reflected in the data by
+representing potentially harmful stereotypes and generalizations. Considering
+crime is a complex and sensitive topic to explore, many incorrect assumptions can
+be made without proper consideration of the influence of bias.
+
+Another possible issue is missingness in the data, since there are 1589 values
+in total missing in the dataset as seen in Table 1. The missing data is important
+if I decide to focus on the relationship between type of crimes committed and
+location, as the variables with missing data are x-coordinate, y-coordinate,
+latitude and longitude, location, and location description. The exact counts are
+shown in Table 1 and the variables all explore the location where the crime
+occurred. 
+
+This indicates it may be ideal to explore a variable other than location, such
+as date or number of arrests, and its relation to the type of crime. In Figure 1,
+I explored the distribution of the types of crimes using the primary_description
+variable. 
+
+## References
+
+
+```{r}
+#| label: fig-description-distribution
+#| fig-cap: "Distribution of Crime Type"
+
+na.omit(chicago_crimes) |> 
+  ggplot(aes(primary_description)) + 
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + 
+  labs(
+    title = "Distribution of Crime Type",
+    subtitle = "Displayed without primary_description NA values",
+    x = "Crime Type", 
+    y = "Count"
+  )
+```
+
+@fig-description-distribution
+
+
+
+```{r}
+#| label: fig-missingness
+#| fig-cap: "General Missingness in Chicago Crimes Data"
+
+chicago_crimes |>
+  gg_miss_var() + 
+  labs(
+    title = "General Missingness in Chicago Crimes Data", 
+    subtitle = "Collected by Chicago Police Department's CLEAR", 
+  )
+```
+
+@fig-missingness
+
+
+
+```{r}
+#| label: missingness-tbl
+
+missing_variables <- chicago_crimes |>
+  summarize(
+    missing_location = sum(is.na(location)), 
+    missing_location_description = sum(is.na(location_description)),
+    missing_longitude = sum(is.na(longitude)), 
+    missing_latitude = sum(is.na(latitude)), 
+    missing_x_coordinate = sum(is.na(x_coordinate)),
+    missing_y_coordinate = sum(is.na(y_coordinate)),
+    missing_total = sum(is.na(chicago_crimes))
+  ) |>
+    pivot_longer(
+    cols = everything(), 
+    names_to = "variable", 
+    values_to = "missing_count"
+  )
+
+knitr::kable(missing_variables, caption = "Table 1. Missingness of Specific
+             Variables in Chicago Crime Data 
+             (further exploring data from
+             Figure 2)")
+
+```

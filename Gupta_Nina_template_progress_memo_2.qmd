@@ -28,7 +28,7 @@ citation-location: margin
 
 ## Github Repo Link
 
-[Nina's Final Project Memo 2 Github Repo](https://github.com/ninag0104/final-project-2.git)
+[Nina's Final Project Memo 2 Github Repo](https://github.com/ninag0104/final-project-2)
 
 :::
 
@@ -39,8 +39,8 @@ citation-location: margin
 
 library(tidyverse)
 library(naniar)
-chicago_crimes <- read_csv("data/chicago_crimes.csv") |> 
-  janitor::clean_names()
+chicago_crimes <- read_csv("data/chicago_crimes.csv") |>
+    janitor::clean_names() 
 ```
 
 
@@ -56,9 +56,60 @@ information on the source, data reliability, and variable meanings.
 [Description of Chicago Crime Data](https://data.cityofchicago.org/Public-Safety/Crimes-One-year-prior-to-present/x2n5-8w5q/about_data)
 
 ## Cleaning Data
+To clean the data, I used the clean_names() function to convert the variable names
+to all lowercase and add underscores for better readability. 
+
+Considering I am exploring the relationship between location and crime committed, 
+I decided to remove some identification variables I am not considering/that will 
+not impact the analysis needed to answer my research question, including
+iucr^[Illinois Uniform Reporting Code] and fbi_cd^[FBI's classification of crime].
+
+Since I've already explored the missingness in Progress Memo 1 and determined
+that all missing data relates to location, I've decided to filter out the missing 
+data so that it doesn't negatively impact my analysis. 
+
+```{r}
+#| label: missingness-tbl
+
+missing_variables <- chicago_crimes |>
+  summarize(
+    missing_location = sum(is.na(location)), 
+    missing_location_description = sum(is.na(location_description)),
+    missing_longitude = sum(is.na(longitude)), 
+    missing_latitude = sum(is.na(latitude)), 
+    missing_x_coordinate = sum(is.na(x_coordinate)),
+    missing_y_coordinate = sum(is.na(y_coordinate)),
+    missing_total = sum(is.na(chicago_crimes))
+  ) |>
+    pivot_longer(
+    cols = everything(), 
+    names_to = "variable", 
+    values_to = "missing_count"
+  )
+
+knitr::kable(missing_variables, caption = "Table 1. Missingness of Specific
+             Variables in Chicago Crime Data 
+             (further exploring data from
+             Figure 2)")
+
+```
+
+
+```{r}
+#| results: hide
+
+chicago_crimes_clean <- chicago_crimes |>
+  janitor::clean_names() |>
+  select(-iucr, -fbi_cd) |>
+  na.omit(crime_crimes)
+```
+
 
 ## EDA
-
+After cleaning up my data by standardizing it, removing unnecessary variables, and
+removing missing values, I am ready to complete EDA. To start, my initial research
+question is: **What is the correlation between types of crimes committed and
+location in the city of Chicago?**
 
 ## Univariate & Bivariate Analysis - graphics/tables w description of what has
 ## been found thus far. What exploring & why Share research question per graphic
@@ -87,7 +138,11 @@ document^[Located at the bottom of the document]
 #| results: hide
 
 chicago_crimes_summary <- chicago_crimes |>
-  skimr::skim_without_charts()
+  na.omit(crime_crimes)
+
+chicago_crimes_summary |>
+  mutate(
+    missingness = sum(is.na(chicago_crimes_summary)))
 ```
 
 ## Why this data
@@ -173,31 +228,3 @@ chicago_crimes |>
 ```
 
 @fig-missingness
-
-
-
-```{r}
-#| label: missingness-tbl
-
-missing_variables <- chicago_crimes |>
-  summarize(
-    missing_location = sum(is.na(location)), 
-    missing_location_description = sum(is.na(location_description)),
-    missing_longitude = sum(is.na(longitude)), 
-    missing_latitude = sum(is.na(latitude)), 
-    missing_x_coordinate = sum(is.na(x_coordinate)),
-    missing_y_coordinate = sum(is.na(y_coordinate)),
-    missing_total = sum(is.na(chicago_crimes))
-  ) |>
-    pivot_longer(
-    cols = everything(), 
-    names_to = "variable", 
-    values_to = "missing_count"
-  )
-
-knitr::kable(missing_variables, caption = "Table 1. Missingness of Specific
-             Variables in Chicago Crime Data 
-             (further exploring data from
-             Figure 2)")
-
-```

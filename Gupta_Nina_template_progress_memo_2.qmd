@@ -39,6 +39,7 @@ citation-location: margin
 
 library(tidyverse)
 library(naniar)
+library(ggmap)
 chicago_crimes <- read_csv("data/chicago_crimes.csv") |>
     janitor::clean_names() 
 ```
@@ -56,8 +57,8 @@ information on the source, data reliability, and variable meanings.
 [Description of Chicago Crime Data](https://data.cityofchicago.org/Public-Safety/Crimes-One-year-prior-to-present/x2n5-8w5q/about_data)
 
 ## Cleaning Data
-To clean the data, I used the clean_names() function to convert the variable names
-to all lowercase and add underscores for better readability. 
+To clean the data, I started in Progress Memo 1 by converting the variable names
+to all lowercase and adding underscores for better readability. 
 
 Considering I am exploring the relationship between location and crime committed, 
 I decided to remove some identification variables I am not considering/that will 
@@ -89,8 +90,7 @@ missing_variables <- chicago_crimes |>
 
 knitr::kable(missing_variables, caption = "Table 1. Missingness of Specific
              Variables in Chicago Crime Data 
-             (further exploring data from
-             Figure 2)")
+             (from Progress Memo 1)")
 
 ```
 
@@ -107,15 +107,131 @@ chicago_crimes_clean <- chicago_crimes |>
 
 ## EDA
 After cleaning up my data by standardizing it, removing unnecessary variables, and
-removing missing values, I am ready to complete EDA. To start, my initial research
-question is: **What is the correlation between types of crimes committed and
+removing missing values, I have a dataset called chicago_crimes_clean and am ready
+to complete EDA. To start, my initial research question is: **What is the
+correlation between types of crimes committed and
 location in the city of Chicago?**
+
+
 
 ## Univariate & Bivariate Analysis - graphics/tables w description of what has
 ## been found thus far. What exploring & why Share research question per graphic
 
+## Univariate Analysis
+To begin, I determined the top 20 locations with the most crimes committed. I
+did the same for the top 20 locations with the least number of crimes committed.
+
+```{r}
+#| label: top-locations-uni
+
+top_locations <- chicago_crimes_clean |>
+  group_by(location_description) |>
+  summarize(
+    n = n()
+  ) |>
+  arrange(desc(n)) |>
+  slice_head(n = 20)
+
+knitr::kable(top_locations, caption = "Table 2. Top 20 Locations with Most
+Crimes Committed")
+```
+
+```{r}
+#| label: least-locations-uni
+least_locations <- chicago_crimes_clean |>
+  group_by(location_description) |>
+  summarize(
+    n = n()
+  ) |>
+  arrange(n) |>
+  slice_head(n = 20)
+
+knitr::kable(least_locations, caption = "Table 3. Top 20 Locations with Least
+Crimes Committed")
+```
+
+
+In addition, I calculated the top 10 crimes that are committed in the city of
+Chicago.
+```{r}
+#| label: top-crimes-uni
+top_crimes_committed <- chicago_crimes_clean |>
+  group_by(primary_description) |>
+  summarize(
+    n = n()
+  ) |>
+  arrange(desc(n)) |>
+  slice_head(n = 10)
+
+knitr::kable(top_crimes_committed, caption = "Table 4. Top 10 Crimes Committed in
+             Chicago")
+```
+
+From my univariate analysis, I am able to deduce that the most common crimes
+committed in Chicago are theft, battery, and criminal damage. Crimes are most
+likely to occur on the street, followed by apartments and residences.
+
+## Bivariate Analysis
+
+For my bivariate analysis, 
+she said to use mapping and use diff colors for crimes
+```{r}
+#| label: pri-and-loc
+
+ggplot(chicago_crimes_clean, aes(x = location_description, y =
+primary_description)) +
+  geom_tile() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Heatmap of Crime Type by Location", x = "Location", y = "Crime
+  Type")
+```
+
+
+```{r}
+#| label: ideas
+top_10 <- chicago_crimes_clean |>
+  mutate(
+    location_description = tolower(location_description)) |> 
+  filter(location_description %in% c("street", "apartment", "residence",
+                                     "sidewalk", "small retail store", 
+                                     "parking lot / garage (non residential",
+                                     "restaurant", "alley", "department store")) |>
+  filter(primary_description %in% c("theft", "battery", "criminal damage", 
+                                    "assault", "motor vehicle theft",
+                                    "other offense", "deceptive practice", 
+                                    "robbery", "weapons violation")) |>
+  count(location_description, primary_description, name = "count")
+
+ggplot(top_10, aes(x = location_description, y = primary_description, fill = 
+                     count)) +
+  geom_tile() +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  labs(title = "Frequency of Crime Types by Location", x = "Location", y = "Crime Type", fill = "Count") +
+  theme_minimal()
+
+ggplot(top_10, aes(x = location_description, y = count, fill = primary_description)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Crimes by Location and Type (Filtered)", x = "Location", y = "Count", fill = "Crime Type") +
+  theme_minimal()
+```
+
+```{r}
+#| label: mapping-fig
+
+ggplot(chicago_crimes_clean, aes(x = location_description, y =
+primary_description)) +
+  geom_tile() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Heatmap of Crime Type by Location", x = "Location", y = "Crime
+  Type")
+```
+
+@mapping-fig
+
 ## Summarize Progress (where at, next steps, self-assessment, guiding curiosities
 ## or research questions planned to explore)
+
+
 
 
 

@@ -5,6 +5,7 @@ subtitle: |
   | Data Science 1 with R (STAT 301-1)
 author: "Nina Gupta"
 date: today
+date_accessed: "`r Sys.Date()`"
 pagetitle: "PM2 Nina Gupta"
 
 format:
@@ -177,6 +178,7 @@ For my bivariate analysis,
 she said to use mapping and use diff colors for crimes
 ```{r}
 #| label: pri-and-loc
+# can refactor the levels and split into subgroups, can change names
 
 ggplot(chicago_crimes_clean, aes(x = location_description, y =
 primary_description)) +
@@ -189,6 +191,8 @@ primary_description)) +
 
 ```{r}
 #| label: ideas
+
+# tile mapping - can split into high medium and low
 top_10 <- chicago_crimes_clean |>
   mutate(
     location_description = tolower(location_description)) |> 
@@ -206,13 +210,12 @@ ggplot(top_10, aes(x = location_description, y = primary_description, fill =
                      count)) +
   geom_tile() +
   scale_fill_gradient(low = "lightblue", high = "darkblue") +
-  labs(title = "Frequency of Crime Types by Location", x = "Location", y = "Crime Type", fill = "Count") +
-  theme_minimal()
+  labs(title = "Frequency of Crime Types by Location", x = "Location", y = "Crime Type", fill = "Count") 
 
+# barplot
 ggplot(top_10, aes(x = location_description, y = count, fill = primary_description)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Crimes by Location and Type (Filtered)", x = "Location", y = "Count", fill = "Crime Type") +
-  theme_minimal()
+  labs(title = "Crimes by Location and Type (Filtered)", x = "Location", y = "Count", fill = "Crime Type") 
 ```
 
 ```{r}
@@ -226,7 +229,6 @@ primary_description)) +
   Type")
 ```
 
-@mapping-fig
 
 ## Summarize Progress (where at, next steps, self-assessment, guiding curiosities
 ## or research questions planned to explore)
